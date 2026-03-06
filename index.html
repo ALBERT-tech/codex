@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Крестики-нолики</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #dbeafe, #f5f3ff);
+    }
+
+    .game {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 12px 24px rgba(15, 23, 42, 0.15);
+      width: min(92vw, 360px);
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: 1.6rem;
+      color: #1e293b;
+    }
+
+    .status {
+      margin: 0 0 14px;
+      color: #334155;
+      font-weight: 600;
+      min-height: 24px;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .cell {
+      aspect-ratio: 1;
+      border: none;
+      border-radius: 12px;
+      font-size: 2rem;
+      font-weight: 700;
+      cursor: pointer;
+      background: #e2e8f0;
+      color: #0f172a;
+      transition: transform 0.15s ease, background-color 0.15s ease;
+    }
+
+    .cell:hover:enabled {
+      transform: translateY(-1px);
+      background: #cbd5e1;
+    }
+
+    .cell:disabled {
+      cursor: not-allowed;
+      opacity: 0.9;
+    }
+
+    .reset {
+      border: none;
+      background: #4f46e5;
+      color: #fff;
+      font-weight: 600;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .reset:hover {
+      background: #4338ca;
+    }
+  </style>
+</head>
+<body>
+  <main class="game">
+    <h1>Крестики-нолики</h1>
+    <p class="status" id="status">Ход игрока X</p>
+    <section class="board" id="board" aria-label="Игровое поле"></section>
+    <button class="reset" id="reset">Начать заново</button>
+  </main>
+
+  <script>
+    const boardElement = document.getElementById('board');
+    const statusElement = document.getElementById('status');
+    const resetButton = document.getElementById('reset');
+
+    const winningLines = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8],
+      [0, 3, 6], [1, 4, 7], [2, 5, 8],
+      [0, 4, 8], [2, 4, 6]
+    ];
+
+    let board = Array(9).fill('');
+    let currentPlayer = 'X';
+    let isGameOver = false;
+
+    function renderBoard() {
+      boardElement.innerHTML = '';
+
+      board.forEach((value, index) => {
+        const cell = document.createElement('button');
+        cell.className = 'cell';
+        cell.type = 'button';
+        cell.textContent = value;
+        cell.disabled = Boolean(value) || isGameOver;
+        cell.setAttribute('aria-label', `Клетка ${index + 1}`);
+        cell.addEventListener('click', () => makeMove(index));
+        boardElement.appendChild(cell);
+      });
+    }
+
+    function checkWinner() {
+      for (const [a, b, c] of winningLines) {
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+          return board[a];
+        }
+      }
+
+      if (board.every(cell => cell)) {
+        return 'draw';
+      }
+
+      return null;
+    }
+
+    function makeMove(index) {
+      if (board[index] || isGameOver) {
+        return;
+      }
+
+      board[index] = currentPlayer;
+      const result = checkWinner();
+
+      if (result === 'draw') {
+        statusElement.textContent = 'Ничья!';
+        isGameOver = true;
+      } else if (result) {
+        statusElement.textContent = `Победил игрок ${result}!`;
+        isGameOver = true;
+      } else {
+        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        statusElement.textContent = `Ход игрока ${currentPlayer}`;
+      }
+
+      renderBoard();
+    }
+
+    function resetGame() {
+      board = Array(9).fill('');
+      currentPlayer = 'X';
+      isGameOver = false;
+      statusElement.textContent = 'Ход игрока X';
+      renderBoard();
+    }
+
+    resetButton.addEventListener('click', resetGame);
+    renderBoard();
+  </script>
+</body>
+</html>
